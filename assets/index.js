@@ -40,34 +40,31 @@ upload.addEventListener('click', () => {
     upload.classList.remove("error_shown")
 });
 
+// ✅ zamiast Imgur – lokalne wczytanie obrazka
 imageInput.addEventListener('change', (event) => {
     upload.classList.remove("upload_loaded");
     upload.classList.add("upload_loading");
 
-    upload.removeAttribute("selected")
+    upload.removeAttribute("selected");
 
     var file = imageInput.files[0];
-    var data = new FormData();
-    data.append("reqtype", "fileupload");
-    data.append("fileToUpload", file);
+    if (!file) return;
 
-    fetch("https://catbox.moe/user/api.php", {
-        method: "POST",
-        body: data
-    })
-    .then(result => result.text())
-    .then(url => {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var url = e.target.result; // base64
         upload.classList.remove("error_shown");
         upload.setAttribute("selected", url);
         upload.classList.add("upload_loaded");
         upload.classList.remove("upload_loading");
         upload.querySelector(".upload_uploaded").src = url;
-    })
-    .catch(() => {
+    };
+    reader.onerror = function() {
         upload.classList.add("error_shown");
         upload.classList.remove("upload_loading");
-    });
-})
+    };
+    reader.readAsDataURL(file);
+});
 
 document.querySelector(".go").addEventListener('click', () => {
     var empty = [];
