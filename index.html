@@ -40,6 +40,7 @@ upload.addEventListener('click', () => {
     upload.classList.remove("error_shown")
 });
 
+// 🔹 wersja offline (Base64)
 imageInput.addEventListener('change', (event) => {
     upload.classList.remove("upload_loaded");
     upload.classList.add("upload_loading");
@@ -47,40 +48,28 @@ imageInput.addEventListener('change', (event) => {
     upload.removeAttribute("selected")
 
     var file = imageInput.files[0];
-    var data = new FormData();
-    data.append("reqtype", "fileupload");
-    data.append("fileToUpload", file);
+    var reader = new FileReader();
 
-    fetch("https://catbox.moe/user/api.php", {
-        method: "POST",
-        body: data
-    })
-    .then(result => result.text())
-    .then(url => {
-        console.log("Catbox response:", url); // ✅ sprawdzisz w konsoli
+    reader.onload = function(e) {
+        var url = e.target.result; // Base64 URL
+        upload.classList.remove("error_shown");
+        upload.setAttribute("selected", url);
+        upload.classList.add("upload_loaded");
+        upload.classList.remove("upload_loading");
 
-        if (url.startsWith("http")) {
-            upload.classList.remove("error_shown");
-            upload.setAttribute("selected", url);
-            upload.classList.add("upload_loaded");
-            upload.classList.remove("upload_loading");
-
-            let img = upload.querySelector(".upload_uploaded");
-            if (img) {
-                img.src = url;
-            }
-        } else {
-            // Catbox zwrócił błąd zamiast linka
-            upload.classList.add("error_shown");
-            upload.classList.remove("upload_loading");
+        let img = upload.querySelector(".upload_uploaded");
+        if (img) {
+            img.src = url;
         }
-    })
-    .catch(err => {
-        console.error("Upload error:", err);
+    }
+
+    reader.onerror = function() {
         upload.classList.add("error_shown");
         upload.classList.remove("upload_loading");
-    });
-})
+    }
+
+    reader.readAsDataURL(file);
+});
 
 document.querySelector(".go").addEventListener('click', () => {
     var empty = [];
